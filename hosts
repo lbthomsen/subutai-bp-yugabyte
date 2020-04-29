@@ -1,0 +1,11 @@
+
+
+bdr0 ansible_port=10003 ansible_host=10.185.46.3
+bdr1 ansible_port=10004 ansible_host=10.185.46.1
+bdr2 ansible_port=10006 ansible_host=10.185.46.2
+
+[servers]
+bdr0
+bdr1
+bdr2
+
