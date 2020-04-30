@@ -21,16 +21,26 @@
           - sudo
         state: present
 
+    - name: Create yb user 
+      user:
+        name: yb
+        group: users
+        state: present
+
     - name: Download YugabyteDB Archive
       unarchive:
         src: https://downloads.yugabyte.com/yugabyte-2.1.5.0-linux.tar.gz
-        dest: /opt
+        dest: /home/yb
         remote_src: yes
+      become_user: yes
+      become: yb
 
     - name: Run YugabyteDB Install
       command: bin/post_install.sh
       args:
-        chdir: /opt/yugabyte-2.1.5.0
+        chdir: /home/yb/yugabyte-2.1.5.0
+      become_user: yes
+      become: yb
 
 
 
