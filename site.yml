@@ -21,6 +21,19 @@
           - sudo
         state: present
 
+    - name: Download YugabyteDB Archive
+      unarchive:
+        src: https://downloads.yugabyte.com/yugabyte-2.1.5.0-linux.tar.gz
+        dest: /opt
+        remote_src: yes
+
+    - name: Run YugabyteDB Install
+      command: bin/post_install.sh
+      args:
+        chdir: /opt/yugabyte-2.1.5.0
+
+
+
 #    - name: Add 2ndQuadrant Repo Key
 #      apt_key: 
 #        id: 9904CD4BD6BAF0C3
