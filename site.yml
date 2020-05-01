@@ -14,10 +14,7 @@
       apt:
         name: 
           - curl
-          - apt-transport-https
-          - dirmngr
           - aptitude
-          - python-psycopg2
           - sudo
         state: present
 
@@ -25,6 +22,7 @@
       user:
         name: yb
         group: users
+        shell: /bin/bash
         state: present
 
     - name: Download YugabyteDB Archive
@@ -32,83 +30,40 @@
         src: https://downloads.yugabyte.com/yugabyte-2.1.5.0-linux.tar.gz
         dest: /home/yb
         remote_src: yes
-      become_user: yes
-      become: yb
+      become_user: yb
+      become: yes
+
+    - name: Create bin symbolic link
+      file:
+        src: /home/yb/yugabyte-2.1.5.0/bin
+        dest: /home/yb/bin
+        state: link
+      become_user: yb
+      become: yes
+
+    - name: Add bin to path
+      lineinfile:
+        path: /home/yb/.bashrc
+        line: "export PATH=~/bin:$PATH"
+        insertafter: EOF
+      become_user: yb
+      become: yes
 
     - name: Run YugabyteDB Install
-      command: bin/post_install.sh
+      shell: bin/post_install.sh
       args:
         chdir: /home/yb/yugabyte-2.1.5.0
-      become_user: yes
-      become: yb
+        creates: /home/yb/yugabyte-2.1.5.0/.post_install.sh.completed
+      become_user: yb
+      become: yes
 
+    - name: Create YugabyteDB Cluster
+      shell: bin/yb-ctl create --listen_ip 0.0.0.0
+      args:
+        chdir: /home/yb/yugabyte-2.1.5.0
+        creates: /home/yb/yugabyte-data
+      become_user: yb
+      become: yes
+      
 
-
-#    - name: Add 2ndQuadrant Repo Key
-#      apt_key: 
-#        id: 9904CD4BD6BAF0C3
-#        keyserver: keyserver.ubuntu.com
-#
-#    - name: Add Citus Repo Key
-#      apt_key: 
-#        id: 0D750985D6AF6C22
-#        url: https://repos.citusdata.com/community/gpgkey
-#
-#    - name: Add 2ndquadrant Repository
-#      apt_repository:
-#        repo: deb [arch=amd64] https://dl.2ndquadrant.com/default/release/apt stretch-2ndquadrant main
-#        state: present
-#
-#    - name: Add Citus Repository
-#      apt_repository: 
-#        repo: deb https://repos.citusdata.com/community/debian/ buster main
-#        state: present
-#
-#    - name: Install citus
-#      apt:
-#        name: 
-#          - postgresql-12-citus-9.2
-#        state: present
-#
-#    - name: Configure PostgreSQL to listen on all interfaces
-#      lineinfile:
-#        path: /etc/postgresql/12/main/postgresql.conf 
-#        insertbefore: '^port = '
-#        create: yes
-#        line: "listen_addresses = '*'"
-#      notify: restart postgresql
-#
-#    - name: Add shared library
-#      lineinfile:
-#        path: /etc/postgresql/12/main/postgresql.conf 
-#        insertafter: '^#shared_preload_libraries = '
-#        create: yes
-#        line: "shared_preload_libraries = 'citus'"
-#      notify: restart postgresql
-#
-#    - name: Configure PostgreSQL to listen on all interfaces
-#      template:
-#        src: files/pg_hba.conf
-#        dest: /etc/postgresql/12/main/pg_hba.conf
-#      notify: restart postgresql
-#
-#    - name: Create citrus extension
-#      postgresql_query:
-#        query: "CREATE EXTENSION IF NOT EXISTS citus"
-#      become: yes
-#      become_user: postgres
-#
-#    - name: Add worker nodes
-#      postgresql_query: 
-#        query: "select * from master_add_node('{{hostvars[item].ansible_hostname}}', 5421)"
-#      when: "'cn' in group_names"
-#      with_items: "{{groups['wn']}}"
-#      become: yes
-#      become_user: postgres
-#
-#
-##    - name: Display all variables/facts known for a host
-##      debug:
-##        var: hostvars[inventory_hostname]
-#
 # vim: ts=2 et nowrap autoindent
