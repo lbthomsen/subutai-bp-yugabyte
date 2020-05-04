@@ -49,21 +49,52 @@
       become_user: yb
       become: yes
 
+    - name: Nuke old install file
+      file: 
+        name: /home/yb/yugabyte-2.1.5.0/.post_install.sh.completed
+        state: absent
+
     - name: Run YugabyteDB Install
-      shell: bin/post_install.sh
+      shell: yugabyte-2.1.5.0/bin/post_install.sh
       args:
-        chdir: /home/yb/yugabyte-2.1.5.0
+        chdir: /home/yb
         creates: /home/yb/yugabyte-2.1.5.0/.post_install.sh.completed
       become_user: yb
       become: yes
 
-    - name: Create YugabyteDB Cluster
-      shell: bin/yb-ctl create --listen_ip 0.0.0.0 --timeout-processes-running-sec 60
-      args:
-        chdir: /home/yb/yugabyte-2.1.5.0
-        creates: /home/yb/yugabyte-data
+    - name: Create data directory
+      file:
+        path: /home/yb/data
+        owner: yb
+        group: users
+        state: directory
+
+    - name: Create master config
+      template: 
+        src: files/master.conf
+        dest: /home/yb/master.conf
       become_user: yb
       become: yes
+
+    - name: Create yb-master service
+      template:
+        src: files/yb-master.service
+        dest: /lib/systemd/system/yb-master.service
+
+    - name: Restart yb-master
+      systemd:
+        name: yb-master
+        enabled: yes
+        daemon_reload: yes
+        state: restarted
+
+#    - name: Create YugabyteDB Cluster
+#      shell: bin/yb-ctl create --listen_ip 0.0.0.0 --timeout-processes-running-sec 60
+#      args:
+#        chdir: /home/yb/yugabyte-2.1.5.0
+#        creates: /home/yb/yugabyte-data
+#      become_user: yb
+#      become: yes
       
 
 # vim: ts=2 et nowrap autoindent

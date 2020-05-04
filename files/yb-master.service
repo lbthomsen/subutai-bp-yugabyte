@@ -1,0 +1,15 @@
+[Unit]
+Description=Run yb-master daemon
+
+[Service]
+Type=simple
+WorkingDirectory=~
+ExecStart=/home/yb/yugabyte-2.1.5.0/bin/yb-master --flagfile master.conf
+Restart=on-failure
+User=yb
+Group=users
+LimitNOFILE=20000
+
+[Install]
+WantedBy=multi-user.target
+Alias=yb-master.service
