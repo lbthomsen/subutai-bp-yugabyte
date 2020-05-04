@@ -62,6 +62,13 @@
       become_user: yb
       become: yes
 
+    - name: Nuke directory (temporary)
+      file:
+        path: /home/yb/data
+        owner: yb
+        group: users
+        state: absent
+    
     - name: Create data directory
       file:
         path: /home/yb/data
@@ -87,6 +94,25 @@
         enabled: yes
         daemon_reload: yes
         state: restarted
+
+    - name: Create tserver config
+      template: 
+        src: files/tserver.conf
+        dest: /home/yb/tserver.conf
+      become_user: yb
+      become: yes
+  
+    - name: Create yb-master service
+      template:
+        src: files/yb-tserver.service
+        dest: /lib/systemd/system/yb-tserver.service
+  
+    - name: Restart yb-tserver
+      systemd:
+        name: yb-tserver
+        enabled: yes
+        daemon_reload: yes
+        state: restarted        
 
 #    - name: Create YugabyteDB Cluster
 #      shell: bin/yb-ctl create --listen_ip 0.0.0.0 --timeout-processes-running-sec 60
