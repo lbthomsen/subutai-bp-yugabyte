@@ -40,6 +40,10 @@
             {
                 "key": "domain",
                 "value": "${domain}"
+            }, 
+            {
+                "key": "environment_name",
+                "value": "${environmentName}"
             }
         ],
         "groups": [
