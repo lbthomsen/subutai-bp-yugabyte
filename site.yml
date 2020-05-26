@@ -162,6 +162,10 @@
         owner: yb
         group: users
 
+    - name: Wait a bit for servers to start
+      pause:
+        seconds: 30
+
     - name: Modify placement
       shell: 'yugabyte-{{yugabyte_version}}/bin/yb-admin --master_addresses={{ master_addresses }} modify_placement_info {{ db_list }} 3'
       args:
