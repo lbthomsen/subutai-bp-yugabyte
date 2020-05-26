@@ -4,7 +4,7 @@ Description=Run yb-tserver daemon
 [Service]
 Type=simple
 WorkingDirectory=~
-ExecStart=/home/yb/yugabyte-2.1.5.0/bin/yb-tserver --flagfile tserver.conf
+ExecStart=/home/yb/yugabyte-{{ yugabyte_version }}/bin/yb-tserver --flagfile tserver.conf
 Restart=on-failure
 User=yb
 Group=users

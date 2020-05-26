@@ -4,7 +4,7 @@ Description=Run yb-master daemon
 [Service]
 Type=simple
 WorkingDirectory=~
-ExecStart=/home/yb/yugabyte-2.1.5.0/bin/yb-master --flagfile master.conf
+ExecStart=/home/yb/yugabyte-{{ yugabyte_version }}/bin/yb-master --flagfile master.conf
 Restart=on-failure
 User=yb
 Group=users
