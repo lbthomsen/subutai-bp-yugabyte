@@ -1,0 +1,2 @@
+{% for host in groups.servers %}{{hostvars[host].ansible_default_ipv4.address}}:7100{%if not loop.last%},{%endif%}
+{%endfor%}

@@ -15,7 +15,7 @@
                 {
                     "protocol": "tcp",
                     "domain": "${domain}",
-                    "internal-port": "5432",
+                    "internal-port": "5433",
                     "external-port": "${port}"
                 }
             ]
@@ -76,13 +76,13 @@
         "port": {
             "description": "Enter the port number",
             "type": "int",
-            "default": "5432"
+            "default": "5433"
         },
         "containerSize": {
             "description": "Container Size",
             "type": "enum",
-            "default": "SMALL",
-            "validation": "SMALL,MEDIUM,LARGE,HUGE"
+            "default": "MEDIUM",
+            "validation": "MEDIUM,LARGE,HUGE"
         }
     }
 }

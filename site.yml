@@ -3,7 +3,35 @@
 - hosts: all
   remote_user: root
 
+  vars: 
+    yugabyte_version: 2.1.6.0
+    yugabyte_download: https://downloads.yugabyte.com/yugabyte-{{yugabyte_version}}-linux.tar.gz
+    db_array: []
+    master_address_array: []
+
   tasks: 
+
+    - name: Create list of db server names
+      set_fact: 
+        db_array: '{{ db_array + [ "subutai." + environment_name + "." + item ] }}'
+      with_items: '{{ groups["servers"] }}'
+      when: 'inventory_hostname == groups["servers"][0]'
+
+    - name: Create array of master_addresses
+      set_fact: 
+        master_address_array: '{{ master_address_array + [ hostvars[item].ansible_default_ipv4.address + ":7100" ] }}'
+      with_items: '{{ groups["servers"] }}'
+      when: 'inventory_hostname == groups["servers"][0]'
+
+    - name: Create db_list
+      set_fact:
+        db_list: '{{ db_array | join(",") }}'
+      when: 'inventory_hostname == groups["servers"][0]'
+
+    - name: create master_addresses
+      set_fact: 
+        master_addresses: '{{ master_address_array | join(",") }}'
+      when: 'inventory_hostname == groups["servers"][0]'
 
     - name: Upgrade Debian
       apt: 
@@ -52,7 +80,7 @@
 
     - name: Download YugabyteDB Archive
       unarchive:
-        src: https://downloads.yugabyte.com/yugabyte-2.1.5.0-linux.tar.gz
+        src: "{{ yugabyte_download}}"
         dest: /home/yb
         remote_src: yes
       become_user: yb
@@ -60,7 +88,7 @@
 
     - name: Create bin symbolic link
       file:
-        src: /home/yb/yugabyte-2.1.5.0/bin
+        src: /home/yb/yugabyte-{{ yugabyte_version }}/bin
         dest: /home/yb/bin
         state: link
       become_user: yb
@@ -76,14 +104,14 @@
 
     - name: Nuke old install file
       file: 
-        name: /home/yb/yugabyte-2.1.5.0/.post_install.sh.completed
+        name: /home/yb/yugabyte-{{ yugabyte_version }}/.post_install.sh.completed
         state: absent
 
     - name: Run YugabyteDB Install
-      shell: yugabyte-2.1.5.0/bin/post_install.sh
+      shell: yugabyte-{{yugabyte_version}}/bin/post_install.sh
       args:
         chdir: /home/yb
-        creates: /home/yb/yugabyte-2.1.5.0/.post_install.sh.completed
+        creates: /home/yb/yugabyte-{{yugabyte_version}}/.post_install.sh.completed
       become_user: yb
       become: yes
 
@@ -127,13 +155,27 @@
         enabled: yes
         state: restarted
 
-#    - name: Create YugabyteDB Cluster
-#      shell: bin/yb-ctl create --listen_ip 0.0.0.0 --timeout-processes-running-sec 60
-#      args:
-#        chdir: /home/yb/yugabyte-2.1.5.0
-#        creates: /home/yb/yugabyte-data
-#      become_user: yb
-#      become: yes
+    - name: Create master_addresses
+      template:
+        src: files/master_addresses
+        dest: /home/yb/master_addresses
+        owner: yb
+        group: users
+
+    - name: Modify placement
+      shell: 'yugabyte-{{yugabyte_version}}/bin/yb-admin --master_addresses={{ master_addresses }} modify_placement_info {{ db_list }} 3'
+      args:
+        chdir: /home/yb
+      become_user: yb
+      become: yes
+      when: 'inventory_hostname == groups["servers"][0]'
       
+    - name: Create .pgpass
+      template:
+        src: files/pgpass
+        dest: /home/yb/.pgpass
+        owner: yb
+        group: users
+        mode: "0600"
 
 # vim: ts=2 et nowrap autoindent
