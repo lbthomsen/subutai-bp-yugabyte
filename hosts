@@ -1,9 +1,0 @@
-
-yb0 ansible_port=10005 ansible_host=10.107.62.1
-yb1 ansible_port=10004 ansible_host=10.107.62.2
-yb2 ansible_port=10003 ansible_host=10.107.62.3
-
-[servers]
-yb0
-yb1
-yb2
