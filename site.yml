@@ -4,7 +4,7 @@
   remote_user: root
 
   vars: 
-    yugabyte_version: 2.1.6.0
+    yugabyte_version: 2.11.2.0-b89
     yugabyte_download: https://downloads.yugabyte.com/yugabyte-{{yugabyte_version}}-linux.tar.gz
     db_array: []
     master_address_array: []
