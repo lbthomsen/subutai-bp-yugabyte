@@ -164,7 +164,7 @@
 
     - name: Wait a bit for servers to start
       pause:
-        seconds: 30
+        seconds: 300
 
     - name: Modify placement
       shell: 'yugabyte-{{yugabyte_version}}/bin/yb-admin --master_addresses={{ master_addresses }} modify_placement_info {{ db_list }} 3'
